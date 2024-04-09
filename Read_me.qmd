@@ -52,7 +52,7 @@ if(!require("xgboost")){install.packages("xgboost")}
 Ce script construit des sous-jeux de données test équivalent à des jeux de données train présent dans le répertoire donné pour limiter l'utilisation de la mémoire pour les ordinateurs moins puissent.    
 ```{r, echo=TRUE}
 input_path = "OldData"
-output_path = "OldOutput"
+output_path = "OldData"
 test_data_path = "OldData"
 source("Scripts/build_test_sets.R")
 ```

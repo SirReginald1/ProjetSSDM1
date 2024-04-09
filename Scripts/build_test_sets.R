@@ -1,11 +1,11 @@
 #' The purpose of this script is to build matching testing sets from pre-existing training sets
 #' so as to reduce the amount of memory used in computation by not loading the full testing set each time.
 
-# input_path = "OldData"
-#
-# output_path = "OldOutput"
-#
-# test_data_path = "OldData"
+input_path = "OldData"
+
+output_path = "OldData"
+
+test_data_path = "OldData"
 
 
 #' Alows script to be run both from Scripts folder and from parent folder

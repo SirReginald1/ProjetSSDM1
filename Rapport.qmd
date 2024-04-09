@@ -35,8 +35,6 @@ data_test = readRDS(paste0("Data/df_newas", n, "_test.rds"))
 data_train$meth_class = factor(data_train$meth_class)
 data_test$meth_class = factor(data_test$meth_class)
 data_full = rbind(data_test, data_train)
-# origin_train = readRDS("../Raport/Image/original_train_lab.rds")
-# origin_test = readRDS("../Raport/Image/original_test_lab.rds")
 origin_train = readRDS(paste0("OldData/df_newas", n, "_train.rds"))$meth_class
 origin_test = readRDS(paste0("OldData/df_newas", n, "_test.rds"))$meth_class
 ```
