@@ -19,7 +19,6 @@ if(!require("ggplot2")){install.packages("ggplot2")}
 if(!require("kableExtra")){install.packages("kableExtra")}
 if(!require("ggpubr")){install.packages("ggpubr")}
 if(!require("jsonlite")){install.packages("jsonlite")}
-if(!require("reactable")){install.packages("reactable")}
 if(!require("corrplot")){install.packages("corrplot")}
 if(!require("e1071")){install.packages("e1071")}
 if(!require("xgboost")){install.packages("xgboost")}
@@ -42,10 +41,11 @@ origin_train = readRDS(paste0("OldData/df_newas", n, "_train.rds"))$meth_class
 origin_test = readRDS(paste0("OldData/df_newas", n, "_test.rds"))$meth_class
 ```
 
-Pour commencer nous nous sommes rendu compte lors de l'implémentation de certains algorithmes que la répartition des classes été déséquilibré entre le group train et test, comme on peut le voir dans la figure 1.
+Pour commencer nous nous sommes rendu compte lors de l'implémentation de certains algorithmes que la répartition des classes été déséquilibré entre le group train et test, comme on peut le voir dans la @fig-train_test_origin.
 
+:::{#fig-train_test_origin}
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 1: Répartition originale des classes entre les données train et test."}
+```{r, fig.width=15, fig.height=7}
 ggplot(data.frame("Class" = c(origin_train, origin_test),
                     "Dataset" = factor(c(rep("Train", length(origin_train)), rep("Test", length(origin_test))))),
          aes(Class))+
@@ -54,10 +54,14 @@ ggplot(data.frame("Class" = c(origin_train, origin_test),
     labs(y = "Proportion of observations")
 ```
 
+Répartition originale des classes entre les données train et test.
+
+:::
+
 Cela peut diminuer la performance des algorithmes de classification. De plus certaines classes se trouve exclusivement dans le groupe d'entraînement ce qui fausse les mesure d'accuracy.
 
 
-Comme on peut le voir dans la figure 2, 3 classes n'ont qu'une seule observation. Nous avons donc retiré ces observations pour les classes suivantes, car on ne peut pas les séparer dans les groupes entraînement et test:
+Comme on peut le voir dans la @fig-disti_class_origin, 3 classes n'ont qu'une seule observation. Nous avons donc retiré ces observations pour les classes suivantes, car on ne peut pas les séparer dans les groupes entraînement et test:
 
 - CONTR, CEBM
 
@@ -65,7 +69,9 @@ Comme on peut le voir dans la figure 2, 3 classes n'ont qu'une seule observation
 
 - CONTR, INFLAM
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 2: Nombres d'observation par classe."}
+:::{#fig-disti_class_origin}
+
+```{r, fig.width=15, fig.height=7}
 data_full = data.frame("Class" = c(origin_train, origin_test))
 ggplot(data_full, aes(factor(Class, 
                         levels = names(rev(sort(table(Class))))
@@ -76,18 +82,18 @@ ggplot(data_full, aes(factor(Class,
   labs(y = "Count", x= "Class")
 ```
 
+Nombres d'observation par classe.
+
+:::
+
 Pour pour adresser le problème de déséquilibre des classes, 2 jeux de données on été créé. 
 Dans le premier, les groupes d'entraînement et de test original ont été gardés. Et seules les classes présentes à la fois dans les données d'entraînement et de test, on été gardé. Cela a donc réduit le nombre de classe à prédire à 69.
 
-Dans le deuxième jeu de donnée, la répartition de chaque classe à prédire a été répartie équitablement entre les groupes d'entraînement et de test, comme indiquée dans la figure 3.
+Dans le deuxième jeu de donnée, la répartition de chaque classe à prédire a été répartie équitablement entre les groupes d'entraînement et de test, comme indiquée dans la @fig-train_test_balanced.
 
 Chaque gène a ensuite été classé par rapport à sa capacité à expliquer le type de cancer sur chacun des 2 group d'entraînement. Le classement a été réalisé grâce à la p-valeur de la statistique de student d'un modèle linéaire.
 
-- Nombre d'observations d'entraînement: `r nrow(data_train)` (`r round(nrow(data_train)*100/(nrow(data_train)+nrow(data_test)),2)`%).
-
-- Nombre d'observations de test: `r nrow(data_test)` (`r round(nrow(data_test)*100/(nrow(data_train)+nrow(data_test)),2)`%).
-
-Le résultat se trouve dans la figure 3.
+Le résultat se trouve dans la @fig-train_test_balanced.
 
 <details>
 <summary style="font-weight: bold; color: #72afd2;">Code rééquilibrage</summary>
@@ -105,11 +111,19 @@ saveRDS(data_full[order,], "df_preproc_train.rds", compress = TRUE)
 ```
 </details>
 
+:::{#fig-train_test_balanced}
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 3: Nouvel répartition des classes entre les données train et test."}
+```{r, fig.width=15, fig.height=7}
 plot_split(data_train, data_test)
 ```
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 4: Nombres d'observation par classe des nouveaux jeux de donnée."}
+
+Nouvel répartition des classes entre les données train et test.
+
+:::
+
+:::{#fig-disti_class_balanced}
+
+```{r, fig.width=15, fig.height=7}
 data_full = data.frame("Class" = c(data_train$meth_class, data_test$meth_class))
 ggplot(data_full, aes(factor(Class, 
                         levels = names(rev(sort(table(Class))))
@@ -120,10 +134,25 @@ ggplot(data_full, aes(factor(Class,
   labs(y = "Count", x= "Class")
 ```
 
-Le nombre de classe à prédire et donc passer de `r length(unique(c(origin_test, origin_train)))` à `r length(unique(c(data_test$meth_class, data_train$meth_class)))` pour le jeu de donné équilibré et a 69 pour le jeu de donnée original.
+Nombres d'observation par classe des nouveaux jeux de donnée.
 
+:::
 
+Une fois les classe qui n'apparaisse pas dans le jeu de données test original, on été enlevé au jeu de donnée d'entraînement originale, on retrouve avec les jeux de donnée qui ont les caractéristiques suivantes:
 
+Le nombre de classe à prédire et donc passer de `r length(unique(c(origin_test, origin_train)))` à `r length(unique(c(data_test$meth_class, data_train$meth_class)))` pour le jeu de donné équilibré et a `r length(unique(origin_test[origin_test %in% Original_test]))` pour le jeu de donnée original.
+
+<u>Jeu de donnée original</u>:
+
+- Nombre d'observations d'entraînement: `r length(origin_train[origin_train %in% Original_test])` (`r round((length(origin_train[origin_train %in% Original_test])/(length(origin_train[origin_train %in% Original_test])+length(origin_test[origin_test %in% Original_test])))*100,2)`%).
+
+- Nombre d'observations de test: `r length(origin_test[origin_test %in% Original_test])` (`r round(length(origin_test[origin_test %in% Original_test])*100/(length(origin_test[origin_test %in% Original_test])+length(origin_train[origin_train %in% Original_test])),2)`%).
+
+<u>Jeu de donnée équilibré</u>:
+
+- Nombre d'observations d'entraînement: `r nrow(data_train)` (`r round((nrow(data_train)/(nrow(data_train)+nrow(data_test)))*100,2)`%).
+
+- Nombre d'observations de test: `r nrow(data_test)` (`r round((nrow(data_test)/(nrow(data_train)+nrow(data_test)))*100,2)`%).
 
 # Test n et p
 
@@ -140,9 +169,9 @@ xgb_Oldres = readRDS("OldDataOutput/xgboost_xgboost/xgboost_xgboost_res.rds")
 nn_Oldres = convert_py_res(read_json("OldDataOutput/nn_600_300_np/nn_600_300_np_res.json"))
 ```
 
+:::{#fig-np_oigin}
 
-
-```{r, fig.width=15, fig.height=16, fig.cap="Figure 5: Résultat des temps de calcul et de l'accuracy pour les jeux d'entraînement et de test en fonction du nombre d'observations et du nombre de variables pour chaque modèle pour les données originales non équilibré (69) classes."}
+```{r, fig.width=15, fig.height=16}
 ggarrange(plot_res_np(rf_Oldres, "acc_train"), 
           plot_res_np(rf_Oldres, "acc_test"),
           plot_res_np(rf_Oldres, "time"),
@@ -158,6 +187,10 @@ ggarrange(plot_res_np(rf_Oldres, "acc_train"),
           labels = c("RF", "", "","SVM", "", "","XGB", "", "","NN"),
           ncol = 3, nrow = 4)
 ```
+
+Résultat des temps de calcul et de l'accuracy pour les jeux d'entraînement et de test en fonction du nombre d'observations et du nombre de variables pour chaque modèle pour les données originales non équilibré (69) classes.
+
+:::
 
 ```{r}
 temp = data.frame("Random forest" = c(rf_Oldres$newas10000$acc_test[10], unpack_time(rf_Oldres, "newas10000", "elapsed")[10]),
@@ -177,7 +210,10 @@ svm_res = readRDS("Output/e1071_svm/e1071_svm_res.rds")
 nn_res = convert_py_res(read_json("Python/Output/nn_600_300_np/nn_600_300_np_res.json"))
 ```
 
-```{r, fig.width=15, fig.height=16, fig.cap="Figure 6: Résultat des temps de calcul et de l'accuracy pour les jeux d'entraînement et de test en fonction du nombre d'observations et du nombre de variables pour chaque modèle pour les données équilibrée, 87 classes."}
+
+:::{#fig-np_balanced87}
+
+```{r, fig.width=15, fig.height=16}
 ggarrange(plot_res_np(rf_res, "acc_train"), 
           plot_res_np(rf_res, "acc_test"),
           plot_res_np(rf_res, "time"),
@@ -193,6 +229,10 @@ ggarrange(plot_res_np(rf_res, "acc_train"),
           labels = c("RF", "", "","SVM", "", "","XGB", "", "","NN"),
           ncol = 3, nrow = 4)
 ```
+
+Résultat des temps de calcul et de l'accuracy pour les jeux d'entraînement et de test en fonction du nombre d'observations et du nombre de variables pour chaque modèle pour les données équilibrée, 87 classes.
+
+:::
 
 ```{r}
 temp = data.frame("Random forest" = c(rf_res$newas10000$acc_test[10], unpack_time(rf_res, "newas10000", "elapsed")[10]),
@@ -213,7 +253,9 @@ xgb_Orires = readRDS("ReducedOutput/xgboost_xgboost/xgboost_xgboost_res.rds")
 nn_Orires = convert_py_res(read_json("ReducedOutput/nn_600_300_np/nn_600_300_np_res.json"))
 ```
 
-```{r, fig.width=15, fig.height=16, fig.cap="Figure 7: Résultat des temps de calcul et de l'accuracy pour les jeux d'entraînement et de test en fonction du nombre d'observations et du nombre de variables pour chaque modèle pour les données équilibrée, 69 classes."}
+:::{#fig-np_balanced69}
+
+```{r, fig.width=15, fig.height=16}
 ggarrange(plot_res_np(rf_Orires, "acc_train"), 
           plot_res_np(rf_Orires, "acc_test"),
           plot_res_np(rf_Orires, "time"),
@@ -229,6 +271,10 @@ ggarrange(plot_res_np(rf_Orires, "acc_train"),
           labels = c("RF", "", "","SVM", "", "","XGB", "", "","NN"),
           ncol = 3, nrow = 4)
 ```
+
+Résultat des temps de calcul et de l'accuracy pour les jeux d'entraînement et de test en fonction du nombre d'observations et du nombre de variables pour chaque modèle pour les données équilibrée, 69 classes.
+
+:::
 
 ```{r}
 temp = data.frame("Random forest" = c(rf_Orires$newas10000$acc_test[10], unpack_time(rf_Orires, "newas10000", "elapsed")[10]),
@@ -326,12 +372,15 @@ On remarquera que le random forest classifie toujours parfaitement notre jeu de 
 
 Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 8: Classification par classe du modèle random forest pour n = 1600 et p = 10000."}
+:::{#fig-classif_rf}
+
+```{r, fig.width=15, fig.height=7}
 plot_class(rf_Oldres$newas10000$results$pred_labs, rf_Oldres$newas10000$results$test_labs)
 ```
 
+Classification par classe du modèle random forest pour n = 1511 et p = 10000.
 
-
+:::
 
 ### SVM
 
@@ -363,19 +412,21 @@ La baisse de l'accuracy pour les modèles avec un petit nombre de variables peut
 
 Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 9: Classification par classe du modèle SVM pour n = 1600 et p = 10000."}
+:::{#fig-classif_svm}
+
+```{r, fig.width=15, fig.height=7}
 plot_class(svm_Oldres$newas10000$results$pred_labs, svm_Oldres$newas10000$results$test_labs)
 ```
 
+Classification par classe du modèle SVM pour n = 1511 et p = 10000.
+
+:::
 
 ### XGBoost
 
 - Language: R
 - Package: xgboost
-
-Le faible temps de calcul ainsi que la mauvaise accuracy de XGBoost est probablement dû au nombre d'itérations de boosting étant plutôt faible (nrounds = 6). Ce nombre d'itération est similaire au nombres epochs pour les réseaux de neurones.
  
-
 On remarque que l'accuracy et particulièrement mauvaises pour les petites valeurs de n. Cela est dû au fait que similairement au réseau de neurones XGBoost utilise la décente de gradient. Or contrairement au modèle nn présenté ici la vitesse de la détente de gradient et fix. Cela présente un problème, car plus le nombre d'observation et petites plus la vitesse de la décente de gradient doit être élevé. Ceci se voit lors de l'entraînement du modèle ou la fonction de perte ne diminué pas pour des modèles avec un nombre d'observations faible.
 
 Nous sommes toujours en train de nous renseigner sur le fonctionnement de XGBoost car ce modèle est particulièrement compliqué.
@@ -409,9 +460,15 @@ Nous sommes toujours en train de nous renseigner sur le fonctionnement de XGBoos
 
 Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 10: Classification par classe du modèle XGBoost pour n = 1600 et p = 10000."}
+:::{#fig-classif_xgb}
+
+```{r, fig.width=15, fig.height=7}
 plot_class(xgb_Oldres$newas10000$results$pred_labs, xgb_Oldres$newas10000$results$test_labs)
 ```
+
+Classification par classe du modèle XGBoost pour n = 1511 et p = 10000.
+
+:::
 
 ### Réseau de neurones
 
@@ -442,11 +499,13 @@ Cette petite structure est souvent due au fait que dans la littérature des couc
 
 Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
 
-:::{#fig-test}
+:::{#fig-classif_nn}
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 11: Classification par classe du modèle nn (600,300) pour n = 1600 et p = 10000."}
+```{r, fig.width=15, fig.height=7}
 plot_class(unlist(nn_Oldres$newas10000$results$pred_labs), unlist(nn_Oldres$newas10000$results$test_labs))
 ```
+
+Classification par classe du modèle nn (600,300) pour n = 1511 et p = 10000.
 
 :::
 
@@ -480,8 +539,9 @@ apply(svm_Oldopti[svm_Oldopti$kernel == "polynomial",-c(1,6:8)], 2, unique)
 #apply(svm_Oldopti[svm_Oldopti$kernel == "radial",1:2], 2, unique)
 ```
 
+:::{#fig-cor_svm_all}
 
-```{r, fig.cap="Figure 12: Corrélation entre les paramètres de SVM, l'accuracy et le temps de calcul pour tout les kernel."}
+```{r}
 corrplot::corrplot(cor(svm_cor_plot)[-c(1:5),-c(3:5)], 
                    method = "square", 
                    number.digits = 2, 
@@ -491,7 +551,13 @@ corrplot::corrplot(cor(svm_cor_plot)[-c(1:5),-c(3:5)],
                    insig = "p-value")
 ```
 
-```{r, warning=FALSE, fig.cap="Figure 13: Corrélation entre les paramètres de SVM, l'accuracy et le temps de calcul pour le kernel polynomial."}
+Corrélation entre les paramètres de SVM, l'accuracy et le temps de calcul pour tout les kernel.
+
+:::
+
+:::{#fig-cor_svm_poly}
+
+```{r, warning=FALSE}
 corrplot::corrplot(cor(svm_cor_plot[svm_cor_plot[,1] == 2,])[-c(1:5),-c(1,3)], 
                    method = "square", 
                    number.digits = 2, 
@@ -500,6 +566,10 @@ corrplot::corrplot(cor(svm_cor_plot[svm_cor_plot[,1] == 2,])[-c(1:5),-c(1,3)],
                    tl.cex = 1,
                    insig = "p-value")
 ```
+
+Corrélation entre les paramètres de SVM, l'accuracy et le temps de calcul pour le kernel polynomial.
+
+:::
 
 Les coef0 = 0 ont la moins bonne performance et prennent le plus de temps a calculé. D'où la forte corrélation négative entre le temps et l'accuracy.
 
@@ -512,8 +582,9 @@ Les coef0 = 0 ont la moins bonne performance et prennent le plus de temps a calc
 sapply(apply(xgb_Oldopti[,-c(8:12)], 2, unique), sort)
 ```
 
+:::{#fig-cor_xgb}
 
-```{r, fig.cap="Figure 14: Corrélation entre les paramètres de XGBoost, l'accuracy et le temps de calcul."}
+```{r}
 corrplot::corrplot(cor(xgb_Oldopti)[8:10,], 
                    method = "square", 
                    number.digits = 2, 
@@ -523,27 +594,33 @@ corrplot::corrplot(cor(xgb_Oldopti)[8:10,],
                    insig = "p-value")
 ```
 
-```{r, fig.width=15, fig.height=10, message=FALSE, warning=FALSE, fig.cap="Figure 19: Relation entre les paramètres et l'accuracy des données test."}
+Corrélation entre les paramètres de XGBoost, l'accuracy et le temps de calcul.
+
+:::
+
+
+:::{#fig-pairs_xgb}
+
+```{r, fig.width=15, fig.height=10, message=FALSE, warning=FALSE}
 GGally:::ggpairs(xgb_Oldopti[,-c(1,8,10:12)])
 ```
+
+Relation entre les paramètres et l'accuracy des données test.
+
+:::
+
 ## Validation croisée
 
 ### XGBoost
 
 ```{r}
 xgb_Oldcv = cv_eval(readRDS("OldDataOutput/xgboost_CV/xgboost_CV_res.rds"))
-svm_Oldcv = cv_eval(readRDS("Output/svm_cv/svm_CV_res.rds"))
+svm_Oldcv = cv_eval(readRDS("OldDataOutput/svm_cv/svm_CV_res.rds"))
 ```
 
 ```{r}
 kbl(xgb_Oldcv[1:5,1:10], format = "html", row.names = FALSE, digits = 2,
-    caption = "Table 2: Les 5 meilleur modèles avec validation croisé a 3 folds")
-```
-
-
-```{r, eval=FALSE}
-kbl(xgb_cv2[1:5,1:10], format = "html", row.names = FALSE, digits = 2,
-    caption = "Table 3: Les 5 meilleur modèles avec validation croisé a 2 folds")
+    caption = "Table 8: Les 5 meilleur modèles avec validation croisé a 3 folds")
 ```
 
 
@@ -588,17 +665,17 @@ pred_test = as.character(pred_test_lab) == as.character(data_test$meth_class)
 
 model_xgb_best_res = c("acc_train" = sum(pred_train)*100/length(pred_train),
                        "acc_test" = sum(pred_test)*100/length(pred_test),
-                       "time" = )
+                       "time" = time)
 
-saveRDS(pred_test_lab, "Output/xgboost_CV/xgb_best_model_pred.rds", compress = TRUE)
-saveRDS(model_xgb_best, "Output/xgboost_CV/best_model_xgb.rds", compress = TRUE)
-saveRDS(model_xgb_best_res, "Output/xgboost_CV/best_model_xgb_res.rds", compress = TRUE)
+saveRDS(pred_test_lab, "OldDataOutput/xgboost_CV/xgb_best_model_pred.rds", compress = TRUE)
+saveRDS(model_xgb_best, "OldDataOutput/xgboost_CV/best_model_xgb.rds", compress = TRUE)
+saveRDS(model_xgb_best_res, "OldDataOutput/xgboost_CV/best_model_xgb_res.rds", compress = TRUE)
 ```
 
 ```{r}
-temp = round(readRDS("Output/xgboost_CV/best_model_xgb_res.rds"), 2)
+temp = round(readRDS("OldDataOutput/xgboost_CV/best_model_xgb_res.rds"), 2)
 kbl(t(c(xgb_Oldcv[1,1:7],temp)), format = "html", row.names = FALSE,
-    caption = "Table 4: Le meilleur modèle XGBoost appliqué au jeu de données entraînement et test.")
+    caption = "Table 9: Le meilleur modèle XGBoost appliqué au jeu de données entraînement et test.")
 ```
 
 
@@ -609,22 +686,22 @@ temp = svm_Oldcv
 temp[,2:ncol(temp)] = round(apply(svm_Oldcv[,2:ncol(temp)], 2, as.numeric),2)
 
 kbl(temp[1:5,], format = "html", row.names = FALSE,
-    caption = "Table 5: Les 5 meilleur modèles avec validation croisé a 3 folds")
+    caption = "Table 10: Les 5 meilleur modèles avec validation croisé a 3 folds")
 ```
 
 
 
 ```{r, eval=FALSE}
-model_svm_best = svm(x = data_train[,-1],
-                     y = data_train[,1],
-                     type = "C-classification",
-                     kernel = svm_opti[1,1],
-                     cost = as.numeric(svm_Oldcv[1,2]),
-                     #gamma = as.numeric(svm_Oldcv[1,3]),
-                     #coef0 = as.numeric(svm_Oldcv[1,4]),
-                     #degree = as.numeric(svm_Oldcv[1,5]),
-                     class.weights = table(data_train[,1]),
-                     probability = TRUE)
+time = system.time({model_svm_best = svm(x = data_train[,-1],
+                                         y = data_train[,1],
+                                         type = "C-classification",
+                                         kernel = svm_opti[1,1],
+                                         cost = as.numeric(svm_Oldcv[1,2]),
+                                         #gamma = as.numeric(svm_Oldcv[1,3]),
+                                         #coef0 = as.numeric(svm_Oldcv[1,4]),
+                                         #degree = as.numeric(svm_Oldcv[1,5]),
+                                         class.weights = table(data_train[,1]),
+                                         probability = TRUE)})["elapsed"]
 
 pred_train = predict(model_svm_best, newdata = data_train[,-1])
 
@@ -635,16 +712,17 @@ pred_test_lab = predict(model_svm_best, newdata = data_test[,-1])
 pred_train = as.character(pred_train) == as.character(data_train$meth_class)
 pred_test = as.character(pred_test_lab) == as.character(data_test$meth_class)
 model_svm_best_res = c("acc_train" = sum(pred_train)*100/length(pred_train),
-                       "acc_test" = sum(pred_test)*100/length(pred_test))
+                       "acc_test" = sum(pred_test)*100/length(pred_test),
+                       "time" = time)
 
 
-saveRDS(model_svm_best_res, "Output/svm_Oldcv/best_model_svm_res.rds", compress = TRUE)
+saveRDS(model_svm_best_res, "OldDataOutput/svm_cv/best_model_svm_res.rds", compress = TRUE)
 ```
 
 ```{r}
-temp = round(readRDS("Output/svm_cv/best_model_svm_res.rds"), 2)
+temp = round(readRDS("OldDataOutput/svm_cv/best_model_svm_res.rds"), 2)
 kbl(t(c(svm_Oldcv[1,1:6],temp)), format = "html", row.names = FALSE,
-    caption = "Table 6: Le meilleur modèle SVM appliqué au jeu de données entraînement et test.")
+    caption = "Table 11: Le meilleur modèle SVM appliqué au jeu de données entraînement et test.")
 ```
 
 

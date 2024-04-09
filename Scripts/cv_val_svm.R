@@ -4,10 +4,7 @@ if(!require(package, character.only = TRUE)){
   install.packages(package)
   library(package)
 }
-if(!require("groupdata2", character.only = TRUE)){
-  install.packages("groupdata2")
-  library("groupdata2")
-}
+
 # source("functions.R")
 #
 # output_path = "../Output"
@@ -23,12 +20,12 @@ nb_folds = 3
 
 
 # Check that the directory for the models exist or creat it
-if(!dir.exists(output_path)) {
-  dir.create(output_path)
+if(!dir.exists(base_output_path)) {
+  dir.create(base_output_path)
 }
 
 # Creat output path
-output_path = paste0(output_path, "/", model_name)
+output_path = paste0(base_output_path, "/", model_name)
 
 if(!dir.exists(output_path)){
   dir.create(output_path)
@@ -59,7 +56,7 @@ if(original_test_classes){
   data_test = data_test[data_test$meth_class %in% Original_test,]
 }
 
-
+data_train$meth_class = factor(data_train$meth_class)
 
 
 # Seting folds
@@ -79,11 +76,11 @@ folds = list("fold1" = c(folds$fold1, folds$fold2),
              "fold3" = c(folds$fold2, folds$fold3))
 
 # Geting models to be tested
-svm_opti = res_param_df(readRDS("../Output/e1071_svm_param/e1071_svm_param_res.rds"), order = "acc_test")
+svm_opti = res_param_df(readRDS(paste0(base_output_path, "/e1071_svm_param/e1071_svm_param_res.rds")), order = "acc_test")
 if(!is.null(acc_cutoff)){
   svm_opti = svm_opti[svm_opti$acc_test >= acc_cutoff,]
 } else{
-  svm_opti = svm_opti[1:num_cutoff,]
+  svm_opti = svm_opti[svm_num_cutoff,]
 }
 
 if(file.exists(paste0(output_path, "/", model_name, "_res.rds"))){
@@ -100,7 +97,7 @@ if(file.exists(paste0(output_path, "/", model_name, "_res.rds"))){
 
 
 
-for(idx in 1:30){
+for(idx in svm_num_cutoff){
 
   # Seting result vectors
   acc_train_out = c()
@@ -163,7 +160,7 @@ for(idx in 1:30){
 
 
     # Putting all results in result vectors
-    pred_train = as.character(pred_train) == as.character(data_train$meth_class)
+    pred_train = as.character(pred_train) == as.character(data_train[fold,-1])
 
     pred_test = as.character(pred_test_lab) == as.character(data_test$meth_class)
 

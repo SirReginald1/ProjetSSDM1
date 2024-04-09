@@ -1,0 +1,198 @@
+---
+title: "Resultat test n et p"
+date: last-modified
+format: 
+  html:
+    fig-format: svg
+    embed-resources: true
+toc: true
+toc-title: "Summary"
+toc-location: left
+toc-depth: 3
+lightbox: true
+---
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, fig.pos="H", message = FALSE)
+source("Scripts/functions.R")
+if(!require("ggplot2")){install.packages("ggplot2")}
+if(!require("kableExtra")){install.packages("kableExtra")}
+if(!require("ggpubr")){install.packages("ggpubr")}
+if(!require("jsonlite")){install.packages("jsonlite")}
+if(!require("corrplot")){install.packages("corrplot")}
+if(!require("e1071")){install.packages("e1071")}
+if(!require("xgboost")){install.packages("xgboost")}
+```
+
+# Explication du code
+
+Pour que les scriptes fonctionnent sens aucune modification les données train et test original doive être placé dans un fichier nommé "Data" dans le répertoire de travail. Les sous-jeux de donné train originaux doivent également être placés dans un fichier nommé "OldData" dans le répertoire de travail.
+
+Pour les machines à faible puissance de calcul, le scripte suivant s'exécute pour construire des sous-jeux de données test équivalent aux sous-jeux de donnée d'entraînement.
+
+```{r, echo=TRUE}
+# Not yet implemented
+```
+
+
+L'ensemble du travail réalisé repose sur les 3 scriptes suivants:
+
+- test_all_np.R: 
+
+- opti_all.R:
+
+- cv_all.R:
+
+Tous les scriptes contiennent des paramètres pour personnaliser la construction des modèles et les chemins d'enté et de sortie du script. Tous les scripts ont été construits de façon modulaire pour permettre l'exécution de chaque script de manière indépendante en ligne de commande avec un minimum de modifications.
+
+
+# Test n et p
+
+```{r}
+source("Scripts/test_all_np.R")
+```
+
+
+## Donnée original 69 classes
+
+```{r}
+rf_Oldres = readRDS("OldDataOutput/randomForest_rf/randomForest_rf_res.rds")
+svm_Oldres = readRDS("OldDataOutput/e1071_svm/e1071_svm_res.rds")
+xgb_Oldres = readRDS("OldDataOutput/xgboost_xgboost/xgboost_xgboost_res.rds")
+```
+
+
+
+```{r, fig.width=15, fig.height=16, fig.cap="Figure 1: Résultat des temps de calcul et de l'accuracy pour les jeux d'entraînement et de test en fonction du nombre d'observations et du nombre de variables pour chaque modèle pour les données originales non équilibré (69) classes."}
+ggarrange(plot_res_np(rf_Oldres, "acc_train"), 
+          plot_res_np(rf_Oldres, "acc_test"),
+          plot_res_np(rf_Oldres, "time"),
+          plot_res_np(svm_Oldres, "acc_train"), 
+          plot_res_np(svm_Oldres, "acc_test"),
+          plot_res_np(svm_Oldres, "time"),
+          plot_res_np(xgb_Oldres, "acc_train"), 
+          plot_res_np(xgb_Oldres, "acc_test"),
+          plot_res_np(xgb_Oldres, "time"),
+          labels = c("RF", "", "","SVM", "", "","XGB", "", ""),
+          ncol = 3, nrow = 4)
+```
+
+```{r}
+temp = data.frame("Random forest" = c(rf_Oldres$newas10000$acc_test[10], unpack_time(rf_Oldres, "newas10000", "elapsed")[10]),
+                  "SVM" = c(svm_Oldres$newas10000$acc_test[10], unpack_time(svm_Oldres, "newas10000", "elapsed")[10]),
+                  "XgBoost" = c(xgb_Oldres$newas10000$acc_test[10], unpack_time(xgb_Oldres, "newas10000", "elapsed")[10])) 
+rownames(temp) = c("Test accuracy", "Temp de calcul en seconds")
+kbl(round(temp, 2), align = "c", caption = "Table 1: Résultats des modèles avec les données originales pour n=1511 et p=10000 avec 69 classes.")
+```
+
+
+### Random Forest
+
+- Language: R
+- Package: randomForest
+
+Le random forest est de loin le modèle qui prend le plus de temps a calculer. Il est probable que cela soit dû au fait que le modèle calcule la pureté des nœuds pour les "split" de toutes les variables restent. Ceci est exacerbé par le fait que pour des variables continues il doit calculer le "split" pour chaque valeur existante de la variable présente dans le jeu de données.
+
+Le random forest semble être le modèle qui a sont accuracy le mois affecté par un nombre de variables réduits, mais de ce fait plus sensible au nombre d'observations.
+
+On remarquera que le random forest classifie toujours parfaitement notre jeu de donnée d'entraînement. Il est probable que ceci soit impacté par le découpage en nœud précis fait avec les données continues.
+
+#### Liste des paramètres utilisés
+
+- **mtry** = sqrt(p):
+
+- **ntree:** 500
+
+#### Classification par classe random forest
+
+Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
+
+```{r, fig.width=15, fig.height=7, fig.cap="Figure 2: Classification par classe du modèle random forest pour n = 1600 et p = 10000."}
+plot_class(rf_Oldres$newas10000$results$pred_labs, rf_Oldres$newas10000$results$test_labs)
+```
+
+
+
+
+### SVM
+
+- Language: R
+- Package: e1071
+
+Le svm semble aussi être sensible au nombre de variables utilisées. Cependant, il converge plus vite que le réseau de neurones.
+
+Nous sommes en train de comprendre les mathématiques utilisées pas le SVM pour pouvoirs expliquer sa performance.
+
+La baisse de l'accuracy pour les modèles avec un petit nombre de variables peut s'expliquer par la difficulté de tracer un hyperplan pour bien séparer les données plus le nombre d'observations est élevé. Mais plus le nombre de variables plus le nombre de dimensions augmente permettent de pouvoirs séparer les données.
+
+
+#### Liste des paramètres utilisés
+
+- **type** = "C-classification"
+
+- **kernel** = "linear"
+
+- **cost** = 1
+
+- **epsilon** = 0.1
+
+- **shrinking** = TRUE
+
+- **probability** = TRUE
+
+#### Classification par classe SVM
+
+Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
+
+```{r, fig.width=15, fig.height=7, fig.cap="Figure 3: Classification par classe du modèle SVM pour n = 1600 et p = 10000."}
+plot_class(svm_Oldres$newas10000$results$pred_labs, svm_Oldres$newas10000$results$test_labs)
+```
+
+
+### XGBoost
+
+- Language: R
+- Package: xgboost
+
+Le faible temps de calcul ainsi que la mauvaise accuracy de XGBoost est probablement dû au nombre d'itérations de boosting étant plutôt faible (nrounds = 6). Ce nombre d'itération est similaire au nombres epochs pour les réseaux de neurones.
+ 
+
+On remarque que l'accuracy et particulièrement mauvaises pour les petites valeurs de n. Cela est dû au fait que similairement au réseau de neurones XGBoost utilise la décente de gradient. Or contrairement au modèle nn présenté ici la vitesse de la détente de gradient et fix. Cela présente un problème, car plus le nombre d'observation et petites plus la vitesse de la décente de gradient doit être élevé. Ceci se voit lors de l'entraînement du modèle ou la fonction de perte ne diminué pas pour des modèles avec un nombre d'observations faible.
+
+Nous sommes toujours en train de nous renseigner sur le fonctionnement de XGBoost car ce modèle est particulièrement compliqué.
+
+#### Liste des paramètres utilisés
+
+- **nrounds** = 30
+
+- **booster** = "gbtree"
+
+- **eta** = 0.15
+
+- **max_depth** = 13
+
+- **subsample** = 1: Proportion of datapoints to use for training
+
+- **lambda** = 3: L2 regularization
+
+- **alpha** = 0: L1 regularization
+
+- **objective** = "multi:softprob"
+
+- **gamma** = 0
+
+- **min_child_weight** = 0.1
+
+- **colsample_bytree** = 0.1
+
+
+#### Classification par classe XGBoost
+
+Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
+
+```{r, fig.width=15, fig.height=7, fig.cap="Figure 4: Classification par classe du modèle XGBoost pour n = 1600 et p = 10000."}
+plot_class(xgb_Oldres$newas10000$results$pred_labs, xgb_Oldres$newas10000$results$test_labs)
+```
+
+
+

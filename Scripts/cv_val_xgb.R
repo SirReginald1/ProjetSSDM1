@@ -4,10 +4,7 @@ if(!require(package, character.only = TRUE)){
   install.packages(package)
   library(package)
 }
-# if(!require("groupdata2", character.only = TRUE)){
-#   install.packages("groupdata2")
-#   library("groupdata2")
-# }
+
 # source("functions.R")
 #
 # output_path = "../Output"
@@ -86,7 +83,7 @@ xgb_opti = res_param_df(readRDS(paste0(base_output_path, "/xgboost_xgboost_param
 if(!is.null(acc_cutoff)){
   xgb_opti = xgb_opti[xgb_opti$acc_test >= acc_cutoff,]
 } else {
-  xgb_opti = xgb_opti[num_cutoff,]
+  xgb_opti = xgb_opti[xgb_num_cutoff,]
 }
 
 # If result file already exists load it
@@ -103,7 +100,7 @@ if(file.exists(paste0(output_path, "/", model_name, "_res.rds"))){
 
 
 
-for(idx in num_cutoff){
+for(idx in xgb_num_cutoff){
 
   # Seting result vectors
   acc_train_out = c()

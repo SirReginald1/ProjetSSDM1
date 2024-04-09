@@ -6,7 +6,6 @@ sorted_order_vector = c("MB, G4", "O IDH", "GBM, RTK II", "A IDH", "EPN, PF A", 
 
 #' Takes object outputed by test script and transforms it to data frame.
 #'
-#' @author Andrew Hardwick
 #' @param res_obj Object outputed by the test script.
 #' @param include_n Boolean indicating if the n's should be included as a column.
 #' @return A list of lists containing all the testing measurements.
@@ -49,7 +48,6 @@ res_to_df = function(res_obj, include_n = TRUE){
 
 #' Takes object outputed by test script and transforms it to data frame. Intended to be used for ggplot.
 #'
-#' @author Andrew Hardwick
 #' @param res_obj Object outputed by the test script.
 #' @return Sum of all the model training time
 #' @export
@@ -64,7 +62,6 @@ sum_time = function(res_obj, time_type = "elapsed"){
 
 #' Returns a result object whith only the specified time type.
 #'
-#' @author Andrew Hardwick
 #' @param res_obj The object resulting from model test script.
 #' @param time_type The time type to be kept
 #' @export
@@ -78,7 +75,6 @@ format_time = function(res_obj, time_type = "elapsed"){
 
 #' Extracts the specified \code{time_type} from a given newas element in a Result object.
 #'
-#' @author Andrew Hardwick
 #' @param res_obj The object resulting from model test script.
 #' @param i Names of the newas element to extract the time type from.
 #' @param time_type Which time_type to extract. Accepted values: \code{{"user", "system", "elapsed"}}.
@@ -102,7 +98,6 @@ unpack_time = function(res_obj, i, time_type){
 #' Renames all files in given directory. Changes the \code{from} patern present in fil names, to the \code{to} patern.
 #' Usses sapply to parralle prosece.
 #'
-#' @author Andrew Hardwick
 #' @param directory The path to the directory in which to change file names.
 #' @param from The patern to be replaced in the file names.
 #' @param to The patern to replace with.
@@ -122,7 +117,6 @@ rename_files = function(directory, from, to, return_output = FALSE){
 
 #' Converts a res object to data frame to be used ggplots.
 #'
-#' @author Andrew Hardwick
 #' @param res_obj The object resulting from model test script.
 #' @param type Which element to plot. Accepted values: \code{{"acc_train", "acc_test", "time"}}.
 #' @export
@@ -201,7 +195,6 @@ res_to_plot_df = function(res_obj, type, time_type = NULL){
 
 #' Plots the specified measure of the given Result object.
 #'
-#' @author Andrew Hardwick
 #' @param res_obj The object resulting from model test script.
 #' @param type Which element to plot. Accepted values: \code{{"acc_train", "acc_test", "time", "CV_acc}}.
 #' @param Time_type The time type to be ploted
@@ -264,7 +257,6 @@ plot_res_np = function(res_obj, type, time_type = "elapsed", colour = NULL, plot
 
 #' Plot the distribution of classes between training and testing sets
 #'
-#' @author Andrew Hardwick
 #' @param data_train The training data.
 #' @param data_test The testing data.
 #' @export
@@ -279,7 +271,6 @@ plot_split = function(data_train, data_test){
 
 #' Plot clasification perfomance.
 #'
-#' @author Andrew Hardwick
 #' @param test_label The training data.
 #' @param pred_label The testing data.
 #' @export
@@ -317,7 +308,6 @@ plot_class = function(test_label, pred_label = NULL){
 
 #' Outputs all results for a given result object
 #'
-#' @author Andrew Hardwick
 #' @param res_obj The object resulting from model test script.
 #' @param colour The colour palette used for ploting.
 #' @param plot_FUN A ggplot geom_ function used to plot the graph. Default \code{geom_line}.
