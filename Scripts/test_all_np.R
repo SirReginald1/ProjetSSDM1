@@ -1,8 +1,8 @@
 ##################### Parameters ###############################
 
-base_output_path = "OldOutput_test"
+base_output_path = "OldDataOutput"
 
-data_path = "Data"
+data_path = "OldData"
 
 save_models = FALSE
 

@@ -18,7 +18,7 @@ old_datasets = FALSE
 # Remove classes with unique instances in the full dataset. Only does this for the balanced datasets.
 remove_singles = TRUE
 
-data_input_path = "../Data"
+data_input_path = "../OldData"
 
 oldData_output_path = "../OldData"
 

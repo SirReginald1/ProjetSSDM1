@@ -24,32 +24,43 @@ if(!require("e1071")){install.packages("e1071")}
 if(!require("xgboost")){install.packages("xgboost")}
 ```
 
-# Explication du code
 
-Pour que les scriptes fonctionnent sens aucune modification les données train et test original doive être placé dans un fichier nommé "Data" dans le répertoire de travail. Les sous-jeux de donné train originaux doivent également être placés dans un fichier nommé "OldData" dans le répertoire de travail.
 
-Pour les machines à faible puissance de calcul, le scripte suivant s'exécute pour construire des sous-jeux de données test équivalent aux sous-jeux de donnée d'entraînement.
+- Pour que ce fichier fonctionne sens aucune modification des scriptes, un fichier **"OldData"** doit être présent dans le répertoire de travail. Et doit contenir les fichiers suivent :
 
+    + df_newas10_train.rds
+
+    + df_newas20_train.rds
+
+    + df_newas30_train.rds
+    
+    + df_newas50_train.rds
+    
+    + df_newas100_train.rds
+    
+    + df_newas200_train.rds
+    
+    + df_newas300_train.rds
+    
+    + df_newas500_train.rds
+    
+    + df_preproc_test.rds
+    
+    + df_preproc_train.rds
+
+
+Ce script construit des sous-jeux de données test équivalent à des jeux de données train présent dans le répertoire donné pour limiter l'utilisation de la mémoire pour les ordinateurs moins puissent.    
 ```{r, echo=TRUE}
-# Not yet implemented
+input_path = "OldData"
+output_path = "OldOutput"
+test_data_path = "OldData"
+source("Scripts/build_test_sets.R")
 ```
-
-
-L'ensemble du travail réalisé repose sur les 3 scriptes suivants:
-
-- test_all_np.R: 
-
-- opti_all.R:
-
-- cv_all.R:
-
-Tous les scriptes contiennent des paramètres pour personnaliser la construction des modèles et les chemins d'enté et de sortie du script. Tous les scripts ont été construits de façon modulaire pour permettre l'exécution de chaque script de manière indépendante en ligne de commande avec un minimum de modifications.
-
 
 # Test n et p
 
-```{r}
-source("Scripts/test_all_np.R")
+```{r, include=FALSE}
+source("Scripts/test_all_np.R") # WARNING WILL REPLACE CURENT RESULTS
 ```
 
 
@@ -78,11 +89,11 @@ ggarrange(plot_res_np(rf_Oldres, "acc_train"),
 ```
 
 ```{r}
-temp = data.frame("Random forest" = c(rf_Oldres$newas10000$acc_test[10], unpack_time(rf_Oldres, "newas10000", "elapsed")[10]),
-                  "SVM" = c(svm_Oldres$newas10000$acc_test[10], unpack_time(svm_Oldres, "newas10000", "elapsed")[10]),
-                  "XgBoost" = c(xgb_Oldres$newas10000$acc_test[10], unpack_time(xgb_Oldres, "newas10000", "elapsed")[10])) 
+temp = data.frame("Random forest" = get_max_results(rf_Oldres)[2:3],
+                  "SVM" = get_max_results(svm_Oldres)[2:3],
+                  "XgBoost" = get_max_results(xgb_Oldres)[2:3]) 
 rownames(temp) = c("Test accuracy", "Temp de calcul en seconds")
-kbl(round(temp, 2), align = "c", caption = "Table 1: Résultats des modèles avec les données originales pour n=1511 et p=10000 avec 69 classes.")
+kbl(round(temp, 2), align = "c", caption = "Table 1: Résultats des modèles avec les données originales pour n et p max calculé.")
 ```
 
 
@@ -107,8 +118,9 @@ On remarquera que le random forest classifie toujours parfaitement notre jeu de 
 
 Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 2: Classification par classe du modèle random forest pour n = 1600 et p = 10000."}
-plot_class(rf_Oldres$newas10000$results$pred_labs, rf_Oldres$newas10000$results$test_labs)
+```{r, fig.width=15, fig.height=7, fig.cap="Figure 2: Classification par classe du modèle random forest pour n et p max calculé."}
+plot_class(rf_Oldres[[length(rf_Oldres)]][["results"]][["pred_labs"]],
+           rf_Oldres[[length(rf_Oldres)]][["results"]][["test_labs"]])
 ```
 
 
@@ -144,8 +156,9 @@ La baisse de l'accuracy pour les modèles avec un petit nombre de variables peut
 
 Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 3: Classification par classe du modèle SVM pour n = 1600 et p = 10000."}
-plot_class(svm_Oldres$newas10000$results$pred_labs, svm_Oldres$newas10000$results$test_labs)
+```{r, fig.width=15, fig.height=7, fig.cap="Figure 3: Classification par classe du modèle SVM pour n et p max calculé."}
+plot_class(svm_Oldres[[length(svm_Oldres)]][["results"]][["pred_labs"]],
+           svm_Oldres[[length(svm_Oldres)]][["results"]][["test_labs"]])
 ```
 
 
@@ -190,9 +203,65 @@ Nous sommes toujours en train de nous renseigner sur le fonctionnement de XGBoos
 
 Les classes sur l'axe des abscisses sont ordonnées en fonction de leur prévalence dans le jeu de donnée entier de manière descendante.
 
-```{r, fig.width=15, fig.height=7, fig.cap="Figure 4: Classification par classe du modèle XGBoost pour n = 1600 et p = 10000."}
-plot_class(xgb_Oldres$newas10000$results$pred_labs, xgb_Oldres$newas10000$results$test_labs)
+```{r, fig.width=15, fig.height=7, fig.cap="Figure 4: Classification par classe du modèle XGBoost pour n et p max calculé."}
+plot_class(xgb_Oldres[[length(xgb_Oldres)]][["results"]][["pred_labs"]],
+           xgb_Oldres[[length(xgb_Oldres)]][["results"]][["test_labs"]])
 ```
+
+
+```{r, echo=TRUE}
+# Supprimées où déplacer ce chunk pour lancer les autres scriptes a la compilation.
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+
+```{r, echo=TRUE}
+source("Scripts/opti_all.R")
+```
+
+
+```{r, echo=TRUE}
+source("Scripts/cv_all.R")
+```
+
+
+```{r, echo=TRUE}
+source("Scripts/build_datasets.R")
+```
+
+
+# Organisation des fichiers et du code
+
+- Les jeux de donnée originelle sont stockés dans le répertoire "OldData", et les données équilibrées sont stockées dans le répertoire "Data".
+
+- Tous les scriptes ont une variable qui indique le nom du répertoire où se trouvent les données df_newas à utilisé dans la construction des modèles (ces répertoires et fichiers doivent déjà exister.)
+
+- Tous les scriptes ont une ou plusieurs variables indiquant le nom du/des répertoire(s) dans lequel sera placer les résultats. Si ce/ces répertoire(s) n'existe pas déjà, il(s) sera/seront créé(s).
+
+- Pour les machines à faible puissance de calcul, le scripte suivant s'exécute pour construire des sous-jeux de données test équivalent aux sous-jeux de donnée d'entraînement.
+
+- Les résultats sont stockés par défaut dans les répertoires suivants:
+
+    + Données original (69 classes) --> "OldDataOutput"
+    
+    + Données équilibrées (87 classes) --> "Output"
+    
+    + Données équilibrées (69 classes) --> "ReducedOutput"
+    
+    L'ensemble du travail est principalement réalisé repose sur 4 scriptes:
+
+- Tous les scriptes contiennent des paramètres pour personnaliser la construction des modèles et les chemins d'enté et de sortie du script. Tous les scripts ont été construits de façon modulaire pour permettre l'exécution de chaque script de manière indépendante en ligne de commande avec un minimum de modifications.
+
+
+L'ensemble du travail est principalement réalisé repose sur 4 scriptes:
+
+- test_all_np.R: Teste tous les modèles en faisant varier le nombre d'observations et de variables.
+
+- opti_all.R: Teste les modèles XGBoost et SVM sur l'ensemble des combinaisons des paramètres donnée.
+
+- cv_all.R: Effectue une crosse la validation sur le jeu de donnée train et l'évalue sur les données test pour évaluer la stabilité des meilleurs paramètres.
+
+- build_datasets.R: Construit les sous-jeux de données originale et équilibré et calcule les meilleures sondes. !!! Très gourment en ressources !!!
 
 
 

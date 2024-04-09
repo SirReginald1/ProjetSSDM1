@@ -624,6 +624,20 @@ balenced_sample = function(input_vect, n, residual_method = "small_nb_first"){
 
 }
 
+
+#' Returns a vector containing the acc_train, acc_test and time of the model with largest
+#' Number of observations and the largest number of variables in the given res_obj.
+#'
+#' @param res_obj The result object the results are to be extracted from.
+#' @export
+get_max_results = function(res_obj){
+  n = length(res_obj[[length(res_obj)]][["acc_test"]])
+  return(c("acc_train" = res_obj[[length(res_obj)]][["acc_train"]][n],
+           "acc_test" = res_obj[[length(res_obj)]][["acc_test"]][n],
+           "time" = unpack_time(res_obj, names(res_obj)[length(res_obj)], "elapsed")[n]))
+}
+
+
 # The list of classes that are present in the original test set.
 Original_test <- c(
   "A IDH",
