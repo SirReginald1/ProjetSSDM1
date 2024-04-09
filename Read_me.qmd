@@ -51,16 +51,13 @@ if(!require("xgboost")){install.packages("xgboost")}
 
 Ce script construit des sous-jeux de données test équivalent à des jeux de données train présent dans le répertoire donné pour limiter l'utilisation de la mémoire pour les ordinateurs moins puissent.    
 ```{r, echo=TRUE}
-input_path = "OldData"
-output_path = "OldData"
-test_data_path = "OldData"
 source("Scripts/build_test_sets.R")
 ```
 
 # Test n et p
 
 ```{r, include=FALSE}
-source("Scripts/test_all_np.R") # WARNING WILL REPLACE CURENT RESULTS
+source("Scripts/test_all_np.R")
 ```
 
 
@@ -209,23 +206,17 @@ plot_class(xgb_Oldres[[length(xgb_Oldres)]][["results"]][["pred_labs"]],
 ```
 
 
-```{r, echo=TRUE}
-# Supprimées où déplacer ce chunk pour lancer les autres scriptes a la compilation.
-knitr::opts_chunk$set(eval = FALSE)
-```
-
-
-```{r, echo=TRUE}
+```{r, eval=FALSE}
 source("Scripts/opti_all.R")
 ```
 
 
-```{r, echo=TRUE}
+```{r, eval=FALSE}
 source("Scripts/cv_all.R")
 ```
 
 
-```{r, echo=TRUE}
+```{r, eval=FALSE}
 source("Scripts/build_datasets.R")
 ```
 
@@ -248,7 +239,6 @@ source("Scripts/build_datasets.R")
     
     + Données équilibrées (69 classes) --> "ReducedOutput"
     
-    L'ensemble du travail est principalement réalisé repose sur 4 scriptes:
 
 - Tous les scriptes contiennent des paramètres pour personnaliser la construction des modèles et les chemins d'enté et de sortie du script. Tous les scripts ont été construits de façon modulaire pour permettre l'exécution de chaque script de manière indépendante en ligne de commande avec un minimum de modifications.
 
