@@ -15,13 +15,13 @@ lightbox: true
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(warning = FALSE, echo = FALSE, fig.pos="H", message = FALSE)
 source("Scripts/functions.R")
-if(!require("ggplot2")){install.packages("ggplot2")}
-if(!require("kableExtra")){install.packages("kableExtra")}
-if(!require("ggpubr")){install.packages("ggpubr")}
-if(!require("jsonlite")){install.packages("jsonlite")}
-if(!require("corrplot")){install.packages("corrplot")}
-if(!require("e1071")){install.packages("e1071")}
-if(!require("xgboost")){install.packages("xgboost")}
+if(!require("ggplot2")){install.packages("ggplot2"); library(ggplot2)}
+if(!require("kableExtra")){install.packages("kableExtra"); library(kableExtra)}
+if(!require("ggpubr")){install.packages("ggpubr"); library(ggpubr)}
+if(!require("jsonlite")){install.packages("jsonlite"); library(jsonlite)}
+if(!require("corrplot")){install.packages("corrplot"); library(corrplot)}
+if(!require("e1071")){install.packages("e1071"); library(e1071)}
+if(!require("xgboost")){install.packages("xgboost"); library(xgboost)}
 ```
 
 
@@ -726,6 +726,32 @@ kbl(t(c(svm_Oldcv[1,1:6],temp)), format = "html", row.names = FALSE,
 
 
 # Annexes
+
+## Test np model opti
+
+:::{#fig-np_opti}
+
+```{r, fig.width=15, fig.height=16}
+xgbOld_np_opti = readRDS("OldDataOutput/xgboost_xgboost_np_opti/xgboost_xgboost_np_opti_res.rds")
+ggarrange(plot_res_np(rf_Oldres, "acc_train"), 
+          plot_res_np(rf_Oldres, "acc_test"),
+          plot_res_np(rf_Oldres, "time"),
+          plot_res_np(svm_Oldres, "acc_train"), 
+          plot_res_np(svm_Oldres, "acc_test"),
+          plot_res_np(svm_Oldres, "time"),
+          plot_res_np(xgbOld_np_opti, "acc_train"), 
+          plot_res_np(xgbOld_np_opti, "acc_test"),
+          plot_res_np(xgbOld_np_opti, "time"),
+          plot_res_np(nn_Oldres, "acc_train"), 
+          plot_res_np(nn_Oldres, "acc_test"),
+          plot_res_np(nn_Oldres, "time"),
+          labels = c("RF", "", "","SVM", "", "","XGB", "", "","NN"),
+          ncol = 3, nrow = 4)
+```
+
+Résultat des tests n et p avec les modèles SVM et XGBoost optimal.
+
+:::
 
 ## Spécification de l'ordinateur utilisé
 

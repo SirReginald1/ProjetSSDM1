@@ -7,21 +7,23 @@ if(!require(package, character.only = TRUE)){
 
 ####################### Uncoment if want to run script on it's own ####################
 
-# source("functions.R")
-#
-# base_output_path = "../Output"
-#
-# data_path = "../Data"
-#
-# model_name = "xgboost_xgboost"
-#
-# save_models = TRUE
-#
-# # Set number of variable list (used to call )
-# newas = c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000)
-#
-# # Set the number of n to test
-# N = c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 1600)
+source("functions.R")
+
+base_output_path = "../OldDataOutput"
+
+data_path = "../OldData"
+
+model_name = "xgboost_xgboost_np_opti"
+
+save_models = FALSE
+
+# Set number of variable list (used to call )
+newas = c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000)
+
+# Set the number of n to test
+N = c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 1600)
+
+original_test_classes = FALSE
 
 
 ####################################################################################
@@ -102,21 +104,21 @@ for(i in newas){
                                                                       #watchlist = list(val1=test.mat, val2= test.mat),
                                                                       params = list(booster = "gbtree",
                                                                                     # learning rate
-                                                                                    eta = 0.15,#0.3,
+                                                                                    eta = 0.1,#0.15,
                                                                                     # minimum loss reduction required to make a further partition
-                                                                                    gamma = 0, # none
-                                                                                    max_depth = 13, #6,
+                                                                                    gamma = 0,
+                                                                                    max_depth = 6,#13, ,
                                                                                     # Proportion of datapoints to use for training
                                                                                     subsample = 1,
                                                                                     # L2 regularization
-                                                                                    lambda = 3, #1,
+                                                                                    lambda = 5,#3,
                                                                                     # L1 regularization
-                                                                                    alpha = 0, #0,
+                                                                                    alpha = 0,
                                                                                     # The loss function
                                                                                     objective = "multi:softprob",
-                                                                                    min_child_weight = 0.1, # none
-                                                                                    colsample_bytree = 0.1,#, # none
-                                                                                    num_class = length(unique(train[,1]))#87
+                                                                                    min_child_weight = 0.1,
+                                                                                    colsample_bytree = 0.2,#0.1,
+                                                                                    num_class = length(unique(train[,1]))
                                                                       ))})
 
     if(save_models){
