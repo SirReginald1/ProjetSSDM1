@@ -1,3 +1,5 @@
+if (!exists("mreadRDS")) {mreadRDS = memoise::memoise(readRDS, cache=cachem::cache_mem(max_size = 10*1024 * 1024^2)) }
+
 if(!require("ggplot2", character.only = TRUE)){
   install.packages("ggplot2")
 }
