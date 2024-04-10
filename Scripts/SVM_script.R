@@ -55,10 +55,10 @@ out[["n"]] = N
 for(i in newas){
 
   # Load training set
-  train = readRDS(paste(data_path,"/df_newas", i, "_train.rds", sep = ""))
+  train = mreadRDS(paste(data_path,"/df_newas", i, "_train.rds", sep = ""))
   #train$meth_class = factor(train$meth_class)
 
-  test = readRDS(paste(data_path,"/df_newas", i, "_test.rds", sep = ""))
+  test = mreadRDS(paste(data_path,"/df_newas", i, "_test.rds", sep = ""))
   test$meth_class = factor(test$meth_class)
 
   # Remove classes that are not present in both datasets
@@ -84,7 +84,7 @@ for(i in newas){
 
   # Run through all the N's
   for(n in N){
-    cat(paste("\rnewas:", i, " | N:", n,"    "))
+    cat(paste("\r", model_name, " newas:", i, " | N:", n,"    "))
 
     # Selecting sample
     n = min(n, nrow(train))
@@ -93,19 +93,27 @@ for(i in newas){
     sample_train$meth_class = factor(sample_train$meth_class)
 
 
-    # Run model
-    res_time[[paste0("n",n)]] = system.time({model = svm(formula = meth_class~.,
-                                                         data = sample_train,
-                                                         type = "C-classification",
-                                                         kernel = "linear",
-                                                         cost = 1,
-                                                         epsilon = 0.1,
-                                                         shrinking = TRUE,
-                                                         probability = TRUE)})
-
-    if(save_models){
-      saveRDS(model, paste0(output_path, "/Models/", model_name,"_newas", i, "_n", n, ".rds"), compress = TRUE)
+    model_filename = paste0(output_path, "/Models/", model_name,"_newas", i, "_n", n, ".rds")
+    if (!file.exists(model_filename)) {
+      # Run model
+      res_time[[paste0("n",n)]] = system.time({model = svm(formula = meth_class~.,
+                                                           data = sample_train,
+                                                           type = "C-classification",
+                                                           kernel = "linear",
+                                                           cost = 1,
+                                                           epsilon = 0.1,
+                                                           shrinking = TRUE,
+                                                           probability = TRUE)})
+      model$res_time = res_time[[paste0("n",n)]]
+      if(save_models){
+        saveRDS(model, model_filename, compress = TRUE)
+      }      
+    } else {
+      model = mreadRDS(model_filename)
+      res_time[[paste0("n",n)]] = model$res_time
     }
+    
+    
 
     ## prediction
     pred_train = predict(model, newdata = sample_train)

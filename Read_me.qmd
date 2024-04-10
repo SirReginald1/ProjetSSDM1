@@ -22,6 +22,16 @@ if(!require("jsonlite")){install.packages("jsonlite")}
 if(!require("corrplot")){install.packages("corrplot")}
 if(!require("e1071")){install.packages("e1071")}
 if(!require("xgboost")){install.packages("xgboost")}
+
+library("ggplot2")       
+library("kableExtra")    
+library("ggpubr")        
+library("jsonlite")      
+library("corrplot")      
+library("e1071")         
+library("xgboost")       
+
+
 ```
 
 

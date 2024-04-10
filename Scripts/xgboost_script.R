@@ -52,10 +52,10 @@ out[["n"]] = N
 for(i in newas){
 
   # Load training set
-  train = readRDS(paste(data_path,"/df_newas", i, "_train.rds", sep = ""))
+  train = mreadRDS(paste(data_path,"/df_newas", i, "_train.rds", sep = ""))
   train[["meth_class"]] = factor(train[["meth_class"]])
 
-  test = readRDS(paste(data_path,"/df_newas", i, "_test.rds", sep = ""))
+  test = mreadRDS(paste(data_path,"/df_newas", i, "_test.rds", sep = ""))
   test[["meth_class"]] = factor(test[["meth_class"]])
 
   # Remove classes that are not present in both datasets
@@ -82,7 +82,7 @@ for(i in newas){
 
   # Run through all the N's
   for(n in N){
-    cat(paste("\rnewas:", i, " | N:", n,"    "))
+    cat(paste("\r", model_name, "  newas:", i, " | N:", n,"    "))
 
     # Selecting sample
     n = min(n, nrow(train))
@@ -95,32 +95,39 @@ for(i in newas){
     data_test = xgb.DMatrix(as.matrix(test[,-1]), label = as.integer(factor(test[,1]))-1)
 
 
-    # Run model
-    res_time[[paste0("n",n)]] = system.time({model = xgboost::xgboost(data = data_train,
-                                                                      # max number of boosting iterations (default 6)
-                                                                      nrounds = 30,
-                                                                      #watchlist = list(val1=test.mat, val2= test.mat),
-                                                                      params = list(booster = "gbtree",
-                                                                                    # learning rate
-                                                                                    eta = 0.15,#0.3,
-                                                                                    # minimum loss reduction required to make a further partition
-                                                                                    gamma = 0, # none
-                                                                                    max_depth = 13, #6,
-                                                                                    # Proportion of datapoints to use for training
-                                                                                    subsample = 1,
-                                                                                    # L2 regularization
-                                                                                    lambda = 3, #1,
-                                                                                    # L1 regularization
-                                                                                    alpha = 0, #0,
-                                                                                    # The loss function
-                                                                                    objective = "multi:softprob",
-                                                                                    min_child_weight = 0.1, # none
-                                                                                    colsample_bytree = 0.1,#, # none
-                                                                                    num_class = length(unique(train[,1]))#87
-                                                                      ))})
+    model_filename = paste0(output_path, "/Models/", model_name,"_newas", i, "_n", n, ".rds")
+    if (!file.exists(model_filename)) {
+      # Run model
+      res_time[[paste0("n",n)]] = system.time({model = xgboost::xgboost(data = data_train,
+                                                                        # max number of boosting iterations (default 6)
+                                                                        nrounds = 30,
+                                                                        #watchlist = list(val1=test.mat, val2= test.mat),
+                                                                        params = list(booster = "gbtree",
+                                                                                      # learning rate
+                                                                                      eta = 0.15,#0.3,
+                                                                                      # minimum loss reduction required to make a further partition
+                                                                                      gamma = 0, # none
+                                                                                      max_depth = 13, #6,
+                                                                                      # Proportion of datapoints to use for training
+                                                                                      subsample = 1,
+                                                                                      # L2 regularization
+                                                                                      lambda = 3, #1,
+                                                                                      # L1 regularization
+                                                                                      alpha = 0, #0,
+                                                                                      # The loss function
+                                                                                      objective = "multi:softprob",
+                                                                                      min_child_weight = 0.1, # none
+                                                                                      colsample_bytree = 0.1,#, # none
+                                                                                      num_class = length(unique(train[,1]))#87
+                                                                        ))})
 
-    if(save_models){
-      saveRDS(model, paste0(output_path, "/Models/", model_name,"_newas", i, "_n", n, ".rds"), compress = TRUE)
+      model$res_time = res_time[[paste0("n",n)]]      
+      if(save_models){
+        saveRDS(model, model_filename, compress = TRUE)
+      }
+    } else {
+      model = mreadRDS(model_filename)
+      res_time[[paste0("n",n)]] = model$res_time
     }
 
     ## xgboost prediction
