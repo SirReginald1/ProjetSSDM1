@@ -97,7 +97,7 @@ if(file.exists(paste0(output_path, "/", model_name, "_res.rds"))){
 
 
 
-for(idx in svm_num_cutoff){
+for(idx in 1:nrow(svm_opti)){
 
   # Seting result vectors
   acc_train_out = c()
@@ -160,7 +160,7 @@ for(idx in svm_num_cutoff){
 
 
     # Putting all results in result vectors
-    pred_train = as.character(pred_train) == as.character(data_train[fold,-1])
+    pred_train = as.character(pred_train) == as.character(data_train[fold,1])
 
     pred_test = as.character(pred_test_lab) == as.character(data_test$meth_class)
 

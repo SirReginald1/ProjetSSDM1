@@ -10,7 +10,7 @@ acc_cutoff = NULL
 # Only run the first n best models
 xgb_num_cutoff = 1:150
 
-svm_num_cutoff = 1:30
+svm_num_cutoff = 1:64
 
 #nb_folds = 3
 

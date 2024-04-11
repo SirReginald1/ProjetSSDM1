@@ -107,13 +107,13 @@ for(i in newas){
       model$res_time = res_time[[paste0("n",n)]]
       if(save_models){
         saveRDS(model, model_filename, compress = TRUE)
-      }      
+      }
     } else {
       model = mreadRDS(model_filename)
       res_time[[paste0("n",n)]] = model$res_time
     }
-    
-    
+
+
 
     ## prediction
     pred_train = predict(model, newdata = sample_train)

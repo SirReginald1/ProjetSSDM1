@@ -7,10 +7,10 @@ data_path = "OldData"
 save_models = TRUE
 
 # Set number of variables to include
-newas = c(10, 20, 30, 50, 100, 200, 300, 500)#c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000)
+newas = c(10, 20, 30, 50, 100, 200, 300, 500)# c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000)
 
 # Set the number of n to test
-N = c(10, 20, 30, 50, 100, 200, 300, 500)#c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 1600)
+N = c(10, 20, 30, 50, 100, 200, 300, 500)# c(10, 20, 30, 50, 100, 200, 300, 500, 1000, 1600)
 
 #' Only use classes that are shared between original datasets in the original data
 #' (used to compar balenced datasets with non balenced)
